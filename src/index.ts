@@ -1,18 +1,31 @@
-import { defaultKeymap } from '@codemirror/commands';
-import { EditorState } from '@codemirror/state';
 import {
+  basicSetup,
   EditorView,
-  keymap,
-} from '@codemirror/view';
+} from 'codemirror';
+
+import { json } from '@codemirror/lang-json';
+import { markdown } from '@codemirror/lang-markdown';
+import { LanguageDescription } from '@codemirror/language';
 
 document.addEventListener('DOMContentLoaded', () => {
-    let startState = EditorState.create({
-        doc: "Hello World",
-        extensions: [keymap.of(defaultKeymap)]
-    })
     
+    const jsonDescription = LanguageDescription.of({
+        name: "JSON",
+        alias: [],
+        extensions: ["json"],
+        filename: /\.json$/,
+        load: () => Promise.resolve(json())
+      });
+
     let view = new EditorView({
-        state: startState,
+        extensions: [
+            basicSetup, 
+            markdown({
+                codeLanguages: [
+                    jsonDescription
+                ]
+              })
+        ],
         parent: document.body
     })
 });
