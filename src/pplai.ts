@@ -1,13 +1,15 @@
-export async function getChatCompletionStream() {
+
+
+export async function getChatCompletionStream(apiKey: string, userInput: string) {
     const response = await fetch("/api/chat/completions", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer `,
+            "Authorization": `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
             model: "llama-3-70b-instruct",
-            messages: [{ role: "user", content: "WHat is the capital for China?" }],
+            messages: [{ role: "user", content: userInput }],
             stream: true,
         }),
     });

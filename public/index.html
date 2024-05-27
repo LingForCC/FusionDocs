@@ -3,9 +3,35 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Webpack App</title>
+  <title></title>
+  <style>
+    /* Add some basic styling to make the layout look decent */
+    body {
+      display: flex;
+      flex-direction: row;
+    }
+    #left-panel {
+      width: 60%;
+      padding: 20px;
+    }
+    #right-panel {
+      width: 40%;
+      padding: 20px;
+    }
+  </style>
 </head>
 <body>
-  <div id="editor"></div>
+  <div id ="left-panel">
+    <div id="editor"></div>
+  </div>    
+  <div id="right-panel">
+    <form>
+      <label for="input-pplai-key">API Key:</label>
+      <input type="text" id="input-pplai-key" placeholder="Enter something...">
+    </form>
+    <textarea id="input-user" rows="10" cols="50" placeholder="Enter multiple lines of text..."></textarea>
+    <button id="button-process">Process</button>
+    <div id="text-airesponse"></div>
+  </div>
 </body>
 </html>

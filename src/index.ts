@@ -7,27 +7,49 @@ import { json } from '@codemirror/lang-json';
 import { markdown } from '@codemirror/lang-markdown';
 import { LanguageDescription } from '@codemirror/language';
 
-document.addEventListener('DOMContentLoaded', () => {
-    
+import { getChatCompletionStream } from './pplai';
+
+document.addEventListener("DOMContentLoaded", () => {
     const jsonDescription = LanguageDescription.of({
         name: "JSON",
         alias: [],
         extensions: ["json"],
         filename: /\.json$/,
-        load: () => Promise.resolve(json())
-      });
+        load: () => Promise.resolve(json()),
+    });
 
     let view = new EditorView({
         extensions: [
-            basicSetup, 
+            basicSetup,
             markdown({
-                codeLanguages: [
-                    jsonDescription
-                ]
-              })
+                codeLanguages: [jsonDescription],
+            }),
         ],
-        parent: document.body
-    })
+        parent: document.getElementById("editor") as HTMLElement,
+    });
 
-    //getChatCompletionStream();
+    const processButton = document.getElementById("button-process");
+
+    if (processButton) {
+        processButton.addEventListener("click", handleProcessButtonClick);
+    }
 });
+
+function handleProcessButtonClick() {
+    const inputKey = document.getElementById(
+        "input-pplai-key"
+    ) as HTMLInputElement;
+
+    const inputUser = document.getElementById(
+        "input-user"
+    ) as HTMLInputElement;
+
+    if (inputKey) {
+        const inputKeyString = inputKey.value;
+        const inputUserString = inputUser.value;
+        getChatCompletionStream(inputKeyString, inputUserString);
+
+    } else {
+        console.error("Input field not found");
+    }
+}
