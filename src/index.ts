@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-function handleProcessButtonClick() {
+async function handleProcessButtonClick() {
     const inputKey = document.getElementById(
         "input-pplai-key"
     ) as HTMLInputElement;
@@ -47,8 +47,12 @@ function handleProcessButtonClick() {
     if (inputKey) {
         const inputKeyString = inputKey.value;
         const inputUserString = inputUser.value;
-        getChatCompletionStream(inputKeyString, inputUserString);
+        let aiResponse = await getChatCompletionStream(inputKeyString, inputUserString);
 
+        const aiResponseElement = document.getElementById('text-airesponse');
+        if (aiResponseElement) {
+            aiResponseElement.innerHTML = aiResponse;
+        }
     } else {
         console.error("Input field not found");
     }
