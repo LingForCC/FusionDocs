@@ -28,4 +28,6 @@ document.addEventListener('DOMContentLoaded', () => {
         ],
         parent: document.body
     })
+
+    //getChatCompletionStream();
 });

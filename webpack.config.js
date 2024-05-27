@@ -27,6 +27,15 @@ module.exports = {
         port: 9000,
         hot: true,
         watchFiles: ['public/**/*'],
+        proxy: [
+            {
+                context: ['/api'],
+                target: 'https://api.perplexity.ai',
+                pathRewrite: { '^/api': '' },
+                secure: false,
+                changeOrigin: true,
+            }
+        ],
     },
     plugins: [
         new HtmlWebpackPlugin({
