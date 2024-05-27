@@ -9,20 +9,12 @@ export async function getChatCompletionStream(apiKey: string, userInput: string)
         },
         body: JSON.stringify({
             model: "llama-3-70b-instruct",
-            messages: [{ role: "user", content: userInput }],
-            stream: true,
+            messages: [{ role: "user", content: userInput }]
         }),
     });
 
-    const reader = response.body?.getReader();
-    const decoder = new TextDecoder("utf-8");
-
-    while (reader) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const chunk = decoder.decode(value, { stream: true });
-        console.log(chunk);
-    }
+    const data = await response.json();
+    console.log(data.choices[0].message.content);
+    return data;
 }
   
