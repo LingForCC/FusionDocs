@@ -29,9 +29,16 @@ module.exports = {
         watchFiles: ['public/**/*'],
         proxy: [
             {
-                context: ['/api'],
+                context: ['/ppl-api'],
                 target: 'https://api.perplexity.ai',
-                pathRewrite: { '^/api': '' },
+                pathRewrite: { '^/ppl-api': '' },
+                secure: false,
+                changeOrigin: true,
+            },
+            {
+                context: ['/google-place-api'],
+                target: 'https://places.googleapis.com/v1/places',
+                pathRewrite: { '^/google-place-api': '' },
                 secure: false,
                 changeOrigin: true,
             }

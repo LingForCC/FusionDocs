@@ -8,7 +8,9 @@ import { markdown } from '@codemirror/lang-markdown';
 import { LanguageDescription } from '@codemirror/language';
 import { EditorState } from '@codemirror/state';
 
-import { getChatCompletionStream } from './pplai';
+import { useTool } from './pplai';
+
+let documentConfiguration: any = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
 
@@ -25,10 +27,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         parent: document.getElementById("editor") as HTMLElement,
     });
 
-    const processButton = document.getElementById("button-process");
+    const useToolButton = document.getElementById("button-useTool");
 
-    if (processButton) {
-        processButton.addEventListener("click", handleProcessButtonClick);
+    if (useToolButton) {
+        useToolButton.addEventListener("click", handleUseToolButtonClick);
     }
 
     //Load the test document
@@ -45,13 +47,28 @@ document.addEventListener("DOMContentLoaded", async () => {
     }));
 
     //Extract the JSON configuration from the document
-    const documentConfiguration = JSON.parse(extractJsonContent(fileContent)!);
+    documentConfiguration = JSON.parse(extractJsonContent(fileContent)!);
 
     //Fill in the pplai key
     const inputKey = document.getElementById(
         "input-pplai-key"
     ) as HTMLInputElement;
     inputKey.value = documentConfiguration.tools.pplai.apiKey;
+
+    //Experiment with Google Places API
+    // const googlePlaceAPIKey = documentConfiguration.tools.googlePlace.apiKey;
+
+    // const googlePlacesResponse = await fetch(`/google-place-api:searchText?fields=places.id,places.displayName&key=${googlePlaceAPIKey}`, {
+    //     method: "POST",
+    //     headers: {
+    //         "Content-Type": "application/json"
+    //     },
+    //     body: JSON.stringify({
+    //         "textQuery": "Spicy Vegetarian Food in Sydney, Australia",
+    //     }),
+    // });
+
+    // console.log(googlePlacesResponse.text());
 });
 
 function extractJsonContent(markdown: string): string | null {
@@ -74,7 +91,7 @@ function extractJsonContent(markdown: string): string | null {
     return markdown.substring(startIndex + startMarker.length, endIndex);
 }
 
-async function handleProcessButtonClick() {
+async function handleUseToolButtonClick() {
     const inputKey = document.getElementById(
         "input-pplai-key"
     ) as HTMLInputElement;
@@ -85,8 +102,7 @@ async function handleProcessButtonClick() {
 
     if (inputKey) {
         const inputKeyString = inputKey.value;
-        const inputUserString = inputUser.value;
-        let aiResponse = await getChatCompletionStream(inputKeyString, inputUserString);
+        let aiResponse = await useTool(inputKeyString, JSON.stringify(documentConfiguration.tools.googlePlace.searchText), JSON.stringify(documentConfiguration.data[0]));
 
         const aiResponseElement = document.getElementById('text-airesponse');
         if (aiResponseElement) {
