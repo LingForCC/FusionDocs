@@ -53,7 +53,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const inputKey = document.getElementById(
         "input-pplai-key"
     ) as HTMLInputElement;
-    inputKey.value = documentConfiguration.tools.pplai.apiKey;
+    inputKey.value = documentConfiguration.aiProvider.pplai.apiKey;
 
     //Experiment with Google Places API
     // const googlePlaceAPIKey = documentConfiguration.tools.googlePlace.apiKey;
@@ -102,7 +102,7 @@ async function handleFindToolButtonClick() {
 
     if (inputKey) {
         const inputKeyString = inputKey.value;
-        let aiResponse = await findTool(inputKeyString, JSON.stringify(documentConfiguration.tools.googlePlace.searchText), inputUser.value);
+        let aiResponse = await findTool(inputKeyString, JSON.stringify(documentConfiguration.tools), inputUser.value);
 
         const aiResponseElement = document.getElementById('text-airesponse');
         if (aiResponseElement) {
