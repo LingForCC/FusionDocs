@@ -10,7 +10,7 @@ import { EditorState } from '@codemirror/state';
 
 import { getChatCompletionStream } from './pplai';
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
 
     //Initialize the UI
     const jsonDescription = LanguageDescription.of({
@@ -32,21 +32,47 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     //Load the test document
-    fetch('./testDocument.md')
-        .then((response) => response.text())
-        .then((fileContent) => {
-            view.setState(EditorState.create({
-                doc: fileContent,
-                extensions: [
-                    basicSetup,
-                    markdown({
-                        codeLanguages: [jsonDescription],
-                    }),
-                ]
-            }))
-        })
-        .catch((error) => console.error(error));
+    const response = await fetch('./testDocument.md');
+    const fileContent = await response.text();
+    view.setState(EditorState.create({
+        doc: fileContent,
+        extensions: [
+            basicSetup,
+            markdown({
+                codeLanguages: [jsonDescription],
+            }),
+        ]
+    }));
+
+    //Extract the JSON configuration from the document
+    const documentConfiguration = JSON.parse(extractJsonContent(fileContent)!);
+
+    //Fill in the pplai key
+    const inputKey = document.getElementById(
+        "input-pplai-key"
+    ) as HTMLInputElement;
+    inputKey.value = documentConfiguration.tools.pplai.apiKey;
 });
+
+function extractJsonContent(markdown: string): string | null {
+    const startMarker = "```json";
+    const endMarker = "```";
+
+    const startIndex = markdown.indexOf(startMarker);
+    if (startIndex === -1) {
+        return null; // no start marker found
+    }
+
+    const endIndex = markdown.indexOf(
+        endMarker,
+        startIndex + startMarker.length
+    );
+    if (endIndex === -1) {
+        return null; // no end marker found
+    }
+
+    return markdown.substring(startIndex + startMarker.length, endIndex);
+}
 
 async function handleProcessButtonClick() {
     const inputKey = document.getElementById(
