@@ -6,10 +6,13 @@ import {
 import { json } from '@codemirror/lang-json';
 import { markdown } from '@codemirror/lang-markdown';
 import { LanguageDescription } from '@codemirror/language';
+import { EditorState } from '@codemirror/state';
 
 import { getChatCompletionStream } from './pplai';
 
 document.addEventListener("DOMContentLoaded", () => {
+
+    //Initialize the UI
     const jsonDescription = LanguageDescription.of({
         name: "JSON",
         alias: [],
@@ -19,12 +22,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     let view = new EditorView({
-        extensions: [
-            basicSetup,
-            markdown({
-                codeLanguages: [jsonDescription],
-            }),
-        ],
         parent: document.getElementById("editor") as HTMLElement,
     });
 
@@ -33,6 +30,22 @@ document.addEventListener("DOMContentLoaded", () => {
     if (processButton) {
         processButton.addEventListener("click", handleProcessButtonClick);
     }
+
+    //Load the test document
+    fetch('./testDocument.md')
+        .then((response) => response.text())
+        .then((fileContent) => {
+            view.setState(EditorState.create({
+                doc: fileContent,
+                extensions: [
+                    basicSetup,
+                    markdown({
+                        codeLanguages: [jsonDescription],
+                    }),
+                ]
+            }))
+        })
+        .catch((error) => console.error(error));
 });
 
 async function handleProcessButtonClick() {
