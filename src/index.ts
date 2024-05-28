@@ -11,6 +11,7 @@ import { EditorState } from '@codemirror/state';
 import { findTool } from './pplai';
 
 let documentConfiguration: any = null;
+let findToolResponse: any = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
 
@@ -31,6 +32,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (findToolButton) {
         findToolButton.addEventListener("click", handleFindToolButtonClick);
+    }
+
+    const useToolButton = document.getElementById("button-useTool");
+    if(useToolButton) {
+        useToolButton.addEventListener("click", handleUseToolButtonClick);
     }
 
     //Load the test document
@@ -54,21 +60,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         "input-pplai-key"
     ) as HTMLInputElement;
     inputKey.value = documentConfiguration.aiProvider.pplai.apiKey;
-
-    //Experiment with Google Places API
-    // const googlePlaceAPIKey = documentConfiguration.tools.googlePlace.apiKey;
-
-    // const googlePlacesResponse = await fetch(`/google-place-api:searchText?fields=places.id,places.displayName&key=${googlePlaceAPIKey}`, {
-    //     method: "POST",
-    //     headers: {
-    //         "Content-Type": "application/json"
-    //     },
-    //     body: JSON.stringify({
-    //         "textQuery": "Spicy Vegetarian Food in Sydney, Australia",
-    //     }),
-    // });
-
-    // console.log(googlePlacesResponse.text());
 });
 
 function extractJsonContent(markdown: string): string | null {
@@ -102,7 +93,9 @@ async function handleFindToolButtonClick() {
 
     if (inputKey) {
         const inputKeyString = inputKey.value;
-        let aiResponse = await findTool(inputKeyString, JSON.stringify(documentConfiguration.tools), inputUser.value);
+        const aiResponse = await findTool(inputKeyString, JSON.stringify(documentConfiguration.tools), inputUser.value);
+
+        findToolResponse = JSON.parse(aiResponse);
 
         const aiResponseElement = document.getElementById('text-airesponse');
         if (aiResponseElement) {
@@ -111,4 +104,36 @@ async function handleFindToolButtonClick() {
     } else {
         console.error("Input field not found");
     }
+}
+
+async function handleUseToolButtonClick() {
+    //send the actual 
+    console.log(findToolResponse);
+
+    const authorizationInfo = documentConfiguration.toolAuthorization[findToolResponse.provider];
+
+    if(authorizationInfo.mode === "apiKeyInParameter") {
+        findToolResponse.request.urlParameters.key = authorizationInfo.apiKey;
+    
+        
+        const url = new URL(findToolResponse.request.apiEndpoint);
+
+        for (const key in findToolResponse.request.urlParameters) {
+            url.searchParams.set(key, findToolResponse.request.urlParameters[key]);
+        }
+
+        const response = await fetch(url, {
+            method: findToolResponse.request.method,
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(findToolResponse.request.body)
+        });
+
+        const result = await response.text();
+
+        console.log(result);
+    }
+
+
 }

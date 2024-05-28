@@ -20,13 +20,17 @@ export async function getChatCompletionStream(apiKey: string, userInput: string)
 export async function findTool(apiKey: string, toolSchema: string, userInput: string): Promise<string> {
 
     const findToolResponseSchema = {    
-        "apiEndpoint": "",
-        "method": "",
-        "urlParameters": {
-
-        },
-        "body": {
-
+        "provider": "",
+        "name": "",
+        "request": {
+            "apiEndpoint": "",
+            "method": "",
+            "urlParameters": {
+    
+            },
+            "body": {
+    
+            }
         }
     }
 
