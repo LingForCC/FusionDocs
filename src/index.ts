@@ -8,7 +8,7 @@ import { markdown } from '@codemirror/lang-markdown';
 import { LanguageDescription } from '@codemirror/language';
 import { EditorState } from '@codemirror/state';
 
-import { useTool } from './pplai';
+import { findTool } from './pplai';
 
 let documentConfiguration: any = null;
 
@@ -27,10 +27,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         parent: document.getElementById("editor") as HTMLElement,
     });
 
-    const useToolButton = document.getElementById("button-useTool");
+    const findToolButton = document.getElementById("button-findTool");
 
-    if (useToolButton) {
-        useToolButton.addEventListener("click", handleUseToolButtonClick);
+    if (findToolButton) {
+        findToolButton.addEventListener("click", handleFindToolButtonClick);
     }
 
     //Load the test document
@@ -91,7 +91,7 @@ function extractJsonContent(markdown: string): string | null {
     return markdown.substring(startIndex + startMarker.length, endIndex);
 }
 
-async function handleUseToolButtonClick() {
+async function handleFindToolButtonClick() {
     const inputKey = document.getElementById(
         "input-pplai-key"
     ) as HTMLInputElement;
@@ -102,7 +102,7 @@ async function handleUseToolButtonClick() {
 
     if (inputKey) {
         const inputKeyString = inputKey.value;
-        let aiResponse = await useTool(inputKeyString, JSON.stringify(documentConfiguration.tools.googlePlace.searchText), JSON.stringify(documentConfiguration.data[0]));
+        let aiResponse = await findTool(inputKeyString, JSON.stringify(documentConfiguration.tools.googlePlace.searchText), inputUser.value);
 
         const aiResponseElement = document.getElementById('text-airesponse');
         if (aiResponseElement) {

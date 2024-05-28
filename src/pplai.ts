@@ -17,9 +17,9 @@ export async function getChatCompletionStream(apiKey: string, userInput: string)
     return data.choices[0].message.content;
 }
 
-export async function useTool(apiKey: string, toolSchema: string, dataSchema: string): Promise<string> {
+export async function findTool(apiKey: string, toolSchema: string, userInput: string): Promise<string> {
 
-    const useToolResponseSchema = {    
+    const findToolResponseSchema = {    
         "apiEndpoint": "",
         "method": "",
         "urlParameters": {
@@ -49,14 +49,14 @@ export async function useTool(apiKey: string, toolSchema: string, dataSchema: st
 
                     ${toolSchema}
 
-                    Based on this schema, I want to send a request so that I can fill in the data schema as below
+                    Based on the tool schema, I want to achieve the goal below
                     
-                    ${dataSchema}
+                    ${userInput}
 
-                    how can I send the request?
+                    how can I use the tool?
 
                     RETURN in following JSON format. I do NOT need anything else.
-                    ${JSON.stringify(useToolResponseSchema)}
+                    ${JSON.stringify(findToolResponseSchema)}
                 ` }
             ]
         }),
