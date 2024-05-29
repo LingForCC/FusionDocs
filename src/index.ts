@@ -10,9 +10,12 @@ import { EditorState } from '@codemirror/state';
 
 import {
   findTool,
+  findToolForPopulate,
   getChatCompletionStream,
+  populateObject,
 } from './pplai';
 
+let editorView: EditorView;
 let documentConfiguration: any = null;
 let findToolResponse: any = null;
 let useToolResponse: any = null;
@@ -28,7 +31,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         load: () => Promise.resolve(json()),
     });
 
-    let view = new EditorView({
+    editorView = new EditorView({
         parent: document.getElementById("editor") as HTMLElement,
     });
 
@@ -48,11 +51,15 @@ document.addEventListener("DOMContentLoaded", async () => {
         processButton.addEventListener("click", handleProcessButtonClick);
     }
     
+    const populateButton = document.getElementById("button-populate");
+    if(populateButton) {
+        populateButton.addEventListener("click", handlePopulateButtonClick);
+    }
 
     //Load the test document
     const response = await fetch('./testDocument.md');
     const fileContent = await response.text();
-    view.setState(EditorState.create({
+    editorView.setState(EditorState.create({
         doc: fileContent,
         extensions: [
             basicSetup,
@@ -171,4 +178,79 @@ async function handleProcessButtonClick() {
     } else {
         console.error("Input field not found");
     }
+}
+
+
+async function handlePopulateButtonClick() {
+    //get the selected object from CodeMirror
+    const state = editorView.state;
+    const selection = state.selection.main;
+
+    const selectedText = state.sliceDoc(selection.from, selection.to);
+
+    const toPopulateObject = JSON.parse(selectedText);
+
+    //use the selected object to find the proper tool
+    const apiKeyElement = document.getElementById("input-pplai-key") as HTMLInputElement;
+
+    const apiKeyString = apiKeyElement.value;
+    const findToolResponseString = await findToolForPopulate(apiKeyString, JSON.stringify(documentConfiguration.tools), JSON.stringify(toPopulateObject));
+
+    const findToolResponseObject = JSON.parse(findToolResponseString);
+
+    const resultElement = document.getElementById('text-result');
+    if (resultElement) {
+        resultElement.innerHTML = resultElement.innerHTML + findToolResponseString;
+    }
+
+    //send request to the tool to get data
+    const authorizationInfo = documentConfiguration.toolAuthorization[findToolResponseObject.provider];
+
+    if(authorizationInfo.mode === "apiKeyInParameter") {
+        findToolResponseObject.request.urlParameters.key = authorizationInfo.apiKey;
+    
+        
+        const url = new URL(findToolResponseObject.request.apiEndpoint);
+
+        for (const key in findToolResponseObject.request.urlParameters) {
+            url.searchParams.set(key, findToolResponseObject.request.urlParameters[key]);
+        }
+
+        const useToolResponse = await fetch(url, {
+            method: findToolResponseObject.request.method,
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(findToolResponseObject.request.body)
+        });
+
+        const useToolResponseString = await useToolResponse.text();
+        const useToolResponseObject = JSON.parse(useToolResponseString);
+
+        const resultElement = document.getElementById('text-result');
+        if (resultElement) {
+            resultElement.innerHTML = resultElement.innerHTML + "<br><br>" + useToolResponseString;
+        }
+
+        //populate the data to the selected object
+        const populateResponseString = await populateObject(apiKeyString, JSON.stringify(useToolResponseObject), JSON.stringify(toPopulateObject.properties));
+        const populateResponseObject = JSON.parse(populateResponseString);
+
+        if (resultElement) {
+            resultElement.innerHTML = resultElement.innerHTML + "<br><br>" + populateResponseString;
+        }
+
+        //write the populated object back to CodeMirror
+        toPopulateObject.properties = populateResponseObject;
+        const populatedString = JSON.stringify(toPopulateObject);
+
+        const transaction = editorView.state.update({
+            changes: { from: selection.from, to: selection.to, insert: populatedString }
+        });
+
+        editorView.dispatch(transaction);
+    }
+
+
+    
 }
