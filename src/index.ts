@@ -9,9 +9,7 @@ import { LanguageDescription } from '@codemirror/language';
 import { EditorState } from '@codemirror/state';
 
 import {
-  findTool,
   findToolForPopulate,
-  getChatCompletionStream,
   populateObject,
 } from './pplai';
 
@@ -34,22 +32,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     editorView = new EditorView({
         parent: document.getElementById("editor") as HTMLElement,
     });
-
-    const findToolButton = document.getElementById("button-findTool");
-
-    if (findToolButton) {
-        findToolButton.addEventListener("click", handleFindToolButtonClick);
-    }
-
-    const useToolButton = document.getElementById("button-useTool");
-    if(useToolButton) {
-        useToolButton.addEventListener("click", handleUseToolButtonClick);
-    }
-
-    const processButton = document.getElementById("button-process");
-    if(processButton) {
-        processButton.addEventListener("click", handleProcessButtonClick);
-    }
     
     const populateButton = document.getElementById("button-populate");
     if(populateButton) {
@@ -98,88 +80,6 @@ function extractJsonContent(markdown: string): string | null {
 
     return markdown.substring(startIndex + startMarker.length, endIndex);
 }
-
-async function handleFindToolButtonClick() {
-    const inputKey = document.getElementById(
-        "input-pplai-key"
-    ) as HTMLInputElement;
-
-    const inputUser = document.getElementById(
-        "input-user"
-    ) as HTMLInputElement;
-
-    if (inputKey) {
-        const inputKeyString = inputKey.value;
-        const aiResponse = await findTool(inputKeyString, JSON.stringify(documentConfiguration.tools), inputUser.value);
-
-        findToolResponse = JSON.parse(aiResponse);
-
-        const resultElement = document.getElementById('text-result');
-        if (resultElement) {
-            resultElement.innerHTML = aiResponse;
-        }
-    } else {
-        console.error("Input field not found");
-    }
-}
-
-async function handleUseToolButtonClick() {
-    //send the actual 
-    console.log(findToolResponse);
-
-    const authorizationInfo = documentConfiguration.toolAuthorization[findToolResponse.provider];
-
-    if(authorizationInfo.mode === "apiKeyInParameter") {
-        findToolResponse.request.urlParameters.key = authorizationInfo.apiKey;
-    
-        
-        const url = new URL(findToolResponse.request.apiEndpoint);
-
-        for (const key in findToolResponse.request.urlParameters) {
-            url.searchParams.set(key, findToolResponse.request.urlParameters[key]);
-        }
-
-        const response = await fetch(url, {
-            method: findToolResponse.request.method,
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(findToolResponse.request.body)
-        });
-
-        const responseText = await response.text();
-        useToolResponse = JSON.parse(responseText);
-
-        const resultElement = document.getElementById('text-result');
-        if (resultElement) {
-            resultElement.innerHTML = resultElement.innerHTML + "<br><br>" + responseText;
-        }
-    }
-
-}
-
-async function handleProcessButtonClick() {
-    const inputKey = document.getElementById(
-        "input-pplai-key"
-    ) as HTMLInputElement;
-
-    const inputUser = document.getElementById(
-        "input-user"
-    ) as HTMLInputElement;
-
-    if (inputKey) {
-        const inputKeyString = inputKey.value;
-        const responseText = await getChatCompletionStream(inputKeyString, inputUser.value);
-
-        const resultElement = document.getElementById('text-result');
-        if (resultElement) {
-            resultElement.innerHTML = resultElement.innerHTML + "<br><br>" + responseText;
-        }
-    } else {
-        console.error("Input field not found");
-    }
-}
-
 
 async function handlePopulateButtonClick() {
     //get the selected object from CodeMirror
