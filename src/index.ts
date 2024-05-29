@@ -8,10 +8,14 @@ import { markdown } from '@codemirror/lang-markdown';
 import { LanguageDescription } from '@codemirror/language';
 import { EditorState } from '@codemirror/state';
 
-import { findTool } from './pplai';
+import {
+  findTool,
+  getChatCompletionStream,
+} from './pplai';
 
 let documentConfiguration: any = null;
 let findToolResponse: any = null;
+let useToolResponse: any = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
 
@@ -38,6 +42,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     if(useToolButton) {
         useToolButton.addEventListener("click", handleUseToolButtonClick);
     }
+
+    const processButton = document.getElementById("button-process");
+    if(processButton) {
+        processButton.addEventListener("click", handleProcessButtonClick);
+    }
+    
 
     //Load the test document
     const response = await fetch('./testDocument.md');
@@ -97,9 +107,9 @@ async function handleFindToolButtonClick() {
 
         findToolResponse = JSON.parse(aiResponse);
 
-        const aiResponseElement = document.getElementById('text-airesponse');
-        if (aiResponseElement) {
-            aiResponseElement.innerHTML = aiResponse;
+        const resultElement = document.getElementById('text-result');
+        if (resultElement) {
+            resultElement.innerHTML = aiResponse;
         }
     } else {
         console.error("Input field not found");
@@ -130,10 +140,35 @@ async function handleUseToolButtonClick() {
             body: JSON.stringify(findToolResponse.request.body)
         });
 
-        const result = await response.text();
+        const responseText = await response.text();
+        useToolResponse = JSON.parse(responseText);
 
-        console.log(result);
+        const resultElement = document.getElementById('text-result');
+        if (resultElement) {
+            resultElement.innerHTML = resultElement.innerHTML + "<br><br>" + responseText;
+        }
     }
 
+}
 
+async function handleProcessButtonClick() {
+    const inputKey = document.getElementById(
+        "input-pplai-key"
+    ) as HTMLInputElement;
+
+    const inputUser = document.getElementById(
+        "input-user"
+    ) as HTMLInputElement;
+
+    if (inputKey) {
+        const inputKeyString = inputKey.value;
+        const responseText = await getChatCompletionStream(inputKeyString, inputUser.value);
+
+        const resultElement = document.getElementById('text-result');
+        if (resultElement) {
+            resultElement.innerHTML = resultElement.innerHTML + "<br><br>" + responseText;
+        }
+    } else {
+        console.error("Input field not found");
+    }
 }
