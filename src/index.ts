@@ -82,74 +82,107 @@ function extractJsonContent(markdown: string): string | null {
 }
 
 async function handlePopulateButtonClick() {
-    //get the selected object from CodeMirror
+    //get the selected text from CodeMirror and detect the corresponding object
     const state = editorView.state;
     const selection = state.selection.main;
 
     const selectedText = state.sliceDoc(selection.from, selection.to);
+    const inlineObjectPattern: RegExp = /@\w+\([^\)]+\)/g; 
 
-    const toPopulateObject = JSON.parse(selectedText);
+    const inlineObjectMatches: RegExpMatchArray | null = selectedText.match(inlineObjectPattern);
 
-    //use the selected object to find the proper tool
-    const apiKeyElement = document.getElementById("input-pplai-key") as HTMLInputElement;
+    if (inlineObjectMatches) {
+        inlineObjectMatches.forEach((inlineObjectMatch) => {
 
-    const apiKeyString = apiKeyElement.value;
-    const findToolResponseString = await findToolForPopulate(apiKeyString, JSON.stringify(documentConfiguration.tools), JSON.stringify(toPopulateObject));
+            const objectRefpattern: RegExp = /@\w+\(([^)]+)\)/; 
+            const objectRefMatches: RegExpMatchArray | null = inlineObjectMatch.match(objectRefpattern);
 
-    const findToolResponseObject = JSON.parse(findToolResponseString);
+            if(objectRefMatches) {
 
-    const resultElement = document.getElementById('text-result');
-    if (resultElement) {
-        resultElement.innerHTML = resultElement.innerHTML + findToolResponseString;
-    }
+                const dataObjects = documentConfiguration.data as Array<any>;
+                dataObjects.forEach(async (item) => {
+                    if (item.metadata.ref === objectRefMatches[1]) {
 
-    //send request to the tool to get data
-    const authorizationInfo = documentConfiguration.toolAuthorization[findToolResponseObject.provider];
+                        //Need to identify the position of the toPopulateObject in the document
 
-    if(authorizationInfo.mode === "apiKeyInParameter") {
-        findToolResponseObject.request.urlParameters.key = authorizationInfo.apiKey;
+
+                        const toPopulateObject = item;
+
+                        //use the selected object to find the proper tool
+                        const apiKeyElement = document.getElementById("input-pplai-key") as HTMLInputElement;
+
+                        const apiKeyString = apiKeyElement.value;
+                        const findToolResponseString = await findToolForPopulate(apiKeyString, JSON.stringify(documentConfiguration.tools), JSON.stringify(toPopulateObject));
+
+                        const findToolResponseObject = JSON.parse(findToolResponseString);
+
+                        const resultElement = document.getElementById('text-result');
+                        if (resultElement) {
+                            resultElement.innerHTML = resultElement.innerHTML + findToolResponseString;
+                        }
+
+                        //send request to the tool to get data
+                        const authorizationInfo = documentConfiguration.toolAuthorization[findToolResponseObject.provider];
+
+                        if(authorizationInfo.mode === "apiKeyInParameter") {
+                            findToolResponseObject.request.urlParameters.key = authorizationInfo.apiKey;
+                        
+                            
+                            const url = new URL(findToolResponseObject.request.apiEndpoint);
+
+                            for (const key in findToolResponseObject.request.urlParameters) {
+                                url.searchParams.set(key, findToolResponseObject.request.urlParameters[key]);
+                            }
+
+                            const useToolResponse = await fetch(url, {
+                                method: findToolResponseObject.request.method,
+                                headers: {
+                                    "Content-Type": "application/json"
+                                },
+                                body: JSON.stringify(findToolResponseObject.request.body)
+                            });
+
+                            const useToolResponseString = await useToolResponse.text();
+                            const useToolResponseObject = JSON.parse(useToolResponseString);
+
+                            const resultElement = document.getElementById('text-result');
+                            if (resultElement) {
+                                resultElement.innerHTML = resultElement.innerHTML + "<br><br>" + useToolResponseString;
+                            }
+
+                            //populate the data to the selected object
+                            const populateResponseString = await populateObject(apiKeyString, JSON.stringify(useToolResponseObject), JSON.stringify(toPopulateObject.properties));
+                            const populateResponseObject = JSON.parse(populateResponseString);
+
+                            if (resultElement) {
+                                resultElement.innerHTML = resultElement.innerHTML + "<br><br>" + populateResponseString;
+                            }
+
+                            //write the populated object back to CodeMirror
+                            toPopulateObject.properties = populateResponseObject;
+
+                            const startMarker = "```json";
+                            const endMarker = "```";
+
+                            const startIndex = editorView.state.doc.toString().indexOf(startMarker);
+                            const endIndex = editorView.state.doc.toString().indexOf(
+                                endMarker,
+                                startIndex + startMarker.length
+                            );
+
+                            const transaction = editorView.state.update({
+                                changes: { from: startIndex, to: endIndex, insert: "```json" + JSON.stringify(documentConfiguration) + "```"}
+                            });
+
+                            editorView.dispatch(transaction);
+                        }
+                    }
+                })
+            }
+        })
+    } 
+
     
-        
-        const url = new URL(findToolResponseObject.request.apiEndpoint);
-
-        for (const key in findToolResponseObject.request.urlParameters) {
-            url.searchParams.set(key, findToolResponseObject.request.urlParameters[key]);
-        }
-
-        const useToolResponse = await fetch(url, {
-            method: findToolResponseObject.request.method,
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(findToolResponseObject.request.body)
-        });
-
-        const useToolResponseString = await useToolResponse.text();
-        const useToolResponseObject = JSON.parse(useToolResponseString);
-
-        const resultElement = document.getElementById('text-result');
-        if (resultElement) {
-            resultElement.innerHTML = resultElement.innerHTML + "<br><br>" + useToolResponseString;
-        }
-
-        //populate the data to the selected object
-        const populateResponseString = await populateObject(apiKeyString, JSON.stringify(useToolResponseObject), JSON.stringify(toPopulateObject.properties));
-        const populateResponseObject = JSON.parse(populateResponseString);
-
-        if (resultElement) {
-            resultElement.innerHTML = resultElement.innerHTML + "<br><br>" + populateResponseString;
-        }
-
-        //write the populated object back to CodeMirror
-        toPopulateObject.properties = populateResponseObject;
-        const populatedString = JSON.stringify(toPopulateObject);
-
-        const transaction = editorView.state.update({
-            changes: { from: selection.from, to: selection.to, insert: populatedString }
-        });
-
-        editorView.dispatch(transaction);
-    }
 
 
     
