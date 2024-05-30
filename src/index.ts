@@ -38,6 +38,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         populateButton.addEventListener("click", handlePopulateButtonClick);
     }
 
+    const routeButton = document.getElementById("button-route");
+    if(routeButton) {
+        routeButton.addEventListener("click", handleRouteButtonClick);
+    }
+
     //Load the test document
     const response = await fetch('./testDocument.md');
     const fileContent = await response.text();
@@ -186,4 +191,35 @@ async function handlePopulateButtonClick() {
 
 
     
+}
+
+async function handleRouteButtonClick() {
+
+    const response = await fetch("http://localhost:9000/google-route-api:computeRoutes?fields=routes.duration&key=", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(
+            {
+                "origin": {
+                    "placeId": "" 
+                },
+                "destination": {
+                    "placeId": ""
+                },
+                "routingPreference": "TRAFFIC_AWARE",
+                "computeAlternativeRoutes": false,
+                "routeModifiers": {
+                    "avoidTolls": false,
+                    "avoidHighways": false,
+                    "avoidFerries": false
+                },
+                "languageCode": "en-US",
+                "units": "IMPERIAL"
+            }
+        )
+    });
+    const text = await response.text();
+    console.log(text);
 }

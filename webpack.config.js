@@ -41,6 +41,13 @@ module.exports = {
                 pathRewrite: { '^/google-place-api': '' },
                 secure: false,
                 changeOrigin: true,
+            },
+            {
+                context: ['/google-route-api'],
+                target: 'https://routes.googleapis.com/directions/v2',
+                pathRewrite: { '^/google-route-api': '' },
+                secure: false,
+                changeOrigin: true,
             }
         ],
     },
