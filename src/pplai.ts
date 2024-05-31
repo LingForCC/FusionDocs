@@ -89,3 +89,60 @@ export async function populateObject(apiKey: string, toPopulateData: string, toP
     const data = await response.json();
     return data.choices[0].message.content;
 }
+
+export async function findTool(apiKey: string, toolSchema: string, userInstruction: string, dataObjects: string): Promise<string> {
+
+    const findToolResponseSchema = {    
+        "provider": "",
+        "name": "",
+        "request": {
+            "apiEndpoint": "",
+            "method": "",
+            "urlParameters": {
+    
+            },
+            "body": {
+    
+            }
+        }
+    }
+
+    const response = await fetch("/ppl-api/chat/completions", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+            model: "llama-3-70b-instruct",
+            messages: [
+                {
+                    role: "system", 
+                    content: "You are an expert in telling me the correct API and corresponding parameters to use. You can ONLY return the result in JSON format."
+                },
+                { role: "user", content: `
+                    
+                    Below is the tool schema 
+
+                    ${toolSchema}
+
+                    Below is the data objects
+
+                    ${dataObjects}
+
+                    Below is the instructions from the user
+
+                    ${userInstruction}
+
+                    Based on the tool schema and the data objects, how can I use the tool to complete user instruction?
+
+                    RETURN in following JSON format. I do NOT need anything else.
+                    ${JSON.stringify(findToolResponseSchema)}
+                ` }
+            ]
+        }),
+    });
+
+    const data = await response.json();
+    return data.choices[0].message.content;
+}
