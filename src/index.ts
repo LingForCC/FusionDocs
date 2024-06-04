@@ -9,7 +9,6 @@ import { LanguageDescription } from '@codemirror/language';
 import { EditorState } from '@codemirror/state';
 
 import {
-  findTool,
   findToolForPopulate,
   populateObject,
 } from './pplai';
@@ -204,26 +203,32 @@ async function useTool(findToolResponseObject: any): Promise<any> {
 
 async function handleInstructButtonClick() {
 
-    const selectedDataObjects = findDataObjectFromSelection();
-
-    //use the selected object to find the proper tool
-    const apiKeyElement = document.getElementById("input-pplai-key") as HTMLInputElement;
-    const userInstructionElement = document.getElementById("input-user") as HTMLInputElement;
-
-    const apiKeyString = apiKeyElement.value;
-    const userInstructionString = userInstructionElement.value;
-    const findToolResponseString = await findTool(apiKeyString, JSON.stringify(documentConfiguration.tools), userInstructionString, JSON.stringify(selectedDataObjects));
-    const findToolResponseObject = JSON.parse(findToolResponseString);
-
+    const response = await window.aiProvider.instruct("this is a test");
     const resultElement = document.getElementById('text-result');
     if (resultElement) {
-        resultElement.innerHTML = resultElement.innerHTML + findToolResponseString;
+        resultElement.innerHTML = resultElement.innerHTML + response;
     }
 
-    const useToolResponseObject = await useTool(findToolResponseObject);
+    // const selectedDataObjects = findDataObjectFromSelection();
 
-    if (resultElement) {
-        resultElement.innerHTML = resultElement.innerHTML + "<br><br>" + JSON.stringify(useToolResponseObject);
-    }
+    // //use the selected object to find the proper tool
+    // const apiKeyElement = document.getElementById("input-pplai-key") as HTMLInputElement;
+    // const userInstructionElement = document.getElementById("input-user") as HTMLInputElement;
+
+    // const apiKeyString = apiKeyElement.value;
+    // const userInstructionString = userInstructionElement.value;
+    // const findToolResponseString = await findTool(apiKeyString, JSON.stringify(documentConfiguration.tools), userInstructionString, JSON.stringify(selectedDataObjects));
+    // const findToolResponseObject = JSON.parse(findToolResponseString);
+
+    // const resultElement = document.getElementById('text-result');
+    // if (resultElement) {
+    //     resultElement.innerHTML = resultElement.innerHTML + findToolResponseString;
+    // }
+
+    // const useToolResponseObject = await useTool(findToolResponseObject);
+
+    // if (resultElement) {
+    //     resultElement.innerHTML = resultElement.innerHTML + "<br><br>" + JSON.stringify(useToolResponseObject);
+    // }
    
 }

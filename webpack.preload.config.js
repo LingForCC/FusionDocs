@@ -4,8 +4,8 @@ const path = require('path');
 
 module.exports = {
     mode: "development",
-    entry: './src/main.ts',
-    target: 'electron-main',
+    entry: './src/preload.ts',
+    target: 'electron-preload',
     devtool: "source-map",
     module: {
         rules: [
@@ -21,6 +21,6 @@ module.exports = {
     },
     output: {
       path: __dirname + '/dist-electron',
-      filename: 'main.js'
+      filename: 'preload.js'
     }
   };

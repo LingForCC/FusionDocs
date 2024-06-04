@@ -7,7 +7,7 @@
         "start": "webpack serve",
         "test": "echo \"Error: no test specified\" && exit 1",
         "startElectron": "electron .",
-        "buildElectron": "webpack --config webpack.main.config.js && webpack --config webpack.renderer.config.js"
+        "buildElectron": "webpack --config webpack.main.config.js && webpack --config webpack.renderer.config.js && webpack --config webpack.preload.config.js"
     },
     "keywords": [],
     "author": "",
@@ -27,6 +27,7 @@
         "@codemirror/lang-markdown": "^6.2.5",
         "@codemirror/view": "^6.26.3",
         "codemirror": "^6.0.1",
+        "dotenv": "^16.4.5",
         "electron": "^30.0.9"
     }
 }

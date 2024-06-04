@@ -1,6 +1,5 @@
 
 
-
 export async function findToolForPopulate(apiKey: string, toolSchema: string, toPopulateObject: string): Promise<string> {
 
     const findToolResponseSchema = {    
@@ -145,4 +144,36 @@ export async function findTool(apiKey: string, toolSchema: string, userInstructi
 
     const data = await response.json();
     return data.choices[0].message.content;
+}
+
+export async function instruct(instruction: string): Promise<string | undefined> {
+
+    try{ 
+
+        const response = await fetch("https://api.perplexity.ai/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${process.env.PPLAI_KEY}`,
+            },
+            body: JSON.stringify({
+                model: "llama-3-70b-instruct",
+                messages: [
+                    {
+                        role: "system", 
+                        content: ""
+                    },
+                    { role: "user", content: `
+                        ${instruction}
+                    ` }
+                ]
+            }),
+        });
+    
+        const data = await response.json();
+        return data.choices[0].message.content;
+    } catch(exception) {
+        console.log(exception);
+    }
+
 }
