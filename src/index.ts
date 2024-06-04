@@ -8,11 +8,6 @@ import { markdown } from '@codemirror/lang-markdown';
 import { LanguageDescription } from '@codemirror/language';
 import { EditorState } from '@codemirror/state';
 
-import {
-  findToolForPopulate,
-  populateObject,
-} from './pplai';
-
 let editorView: EditorView;
 let documentConfiguration: any = null;
 let findToolResponse: any = null;
@@ -88,52 +83,52 @@ function extractJsonContent(markdown: string): string | null {
 
 async function handlePopulateButtonClick() {
      
-     const toPopulateObject = findDataObjectFromSelection()[0];
+    //  const toPopulateObject = findDataObjectFromSelection()[0];
 
-     //use the selected object to find the proper tool
-     const apiKeyElement = document.getElementById("input-pplai-key") as HTMLInputElement;
+    //  //use the selected object to find the proper tool
+    //  const apiKeyElement = document.getElementById("input-pplai-key") as HTMLInputElement;
 
-     const apiKeyString = apiKeyElement.value;
-     const findToolResponseString = await findToolForPopulate(apiKeyString, JSON.stringify(documentConfiguration.tools), JSON.stringify(toPopulateObject));
+    //  const apiKeyString = apiKeyElement.value;
+    //  const findToolResponseString = await findToolForPopulate(apiKeyString, JSON.stringify(documentConfiguration.tools), JSON.stringify(toPopulateObject));
 
-     const findToolResponseObject = JSON.parse(findToolResponseString);
+    //  const findToolResponseObject = JSON.parse(findToolResponseString);
 
-     const resultElement = document.getElementById('text-result');
-     if (resultElement) {
-         resultElement.innerHTML = resultElement.innerHTML + findToolResponseString;
-     }
+    //  const resultElement = document.getElementById('text-result');
+    //  if (resultElement) {
+    //      resultElement.innerHTML = resultElement.innerHTML + findToolResponseString;
+    //  }
 
-     const useToolResponseObject = await useTool(findToolResponseObject);
+    //  const useToolResponseObject = await useTool(findToolResponseObject);
 
-     if (resultElement) {
-         resultElement.innerHTML = resultElement.innerHTML + "<br><br>" + JSON.stringify(useToolResponseObject);
-     }
+    //  if (resultElement) {
+    //      resultElement.innerHTML = resultElement.innerHTML + "<br><br>" + JSON.stringify(useToolResponseObject);
+    //  }
 
-     //populate the data to the selected object
-     const populateResponseString = await populateObject(apiKeyString, JSON.stringify(useToolResponseObject), JSON.stringify(toPopulateObject.properties));
-     const populateResponseObject = JSON.parse(populateResponseString);
+    //  //populate the data to the selected object
+    //  const populateResponseString = await populateObject(apiKeyString, JSON.stringify(useToolResponseObject), JSON.stringify(toPopulateObject.properties));
+    //  const populateResponseObject = JSON.parse(populateResponseString);
 
-     if (resultElement) {
-         resultElement.innerHTML = resultElement.innerHTML + "<br><br>" + populateResponseString;
-     }
+    //  if (resultElement) {
+    //      resultElement.innerHTML = resultElement.innerHTML + "<br><br>" + populateResponseString;
+    //  }
 
-     //write the populated object back to CodeMirror
-     toPopulateObject.properties = populateResponseObject;
+    //  //write the populated object back to CodeMirror
+    //  toPopulateObject.properties = populateResponseObject;
 
-     const startMarker = "```json";
-     const endMarker = "```";
+    //  const startMarker = "```json";
+    //  const endMarker = "```";
 
-     const startIndex = editorView.state.doc.toString().indexOf(startMarker);
-     const endIndex = editorView.state.doc.toString().indexOf(
-         endMarker,
-         startIndex + startMarker.length
-     );
+    //  const startIndex = editorView.state.doc.toString().indexOf(startMarker);
+    //  const endIndex = editorView.state.doc.toString().indexOf(
+    //      endMarker,
+    //      startIndex + startMarker.length
+    //  );
 
-     const transaction = editorView.state.update({
-         changes: { from: startIndex, to: endIndex, insert: "```json" + JSON.stringify(documentConfiguration) + "```"}
-     });
+    //  const transaction = editorView.state.update({
+    //      changes: { from: startIndex, to: endIndex, insert: "```json" + JSON.stringify(documentConfiguration) + "```"}
+    //  });
 
-     editorView.dispatch(transaction);
+    //  editorView.dispatch(transaction);
 }
 
 function findDataObjectFromSelection(): Array<any> {

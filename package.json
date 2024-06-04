@@ -26,6 +26,7 @@
         "@codemirror/lang-json": "^6.0.1",
         "@codemirror/lang-markdown": "^6.2.5",
         "@codemirror/view": "^6.26.3",
+        "axios": "^1.7.2",
         "codemirror": "^6.0.1",
         "dotenv": "^16.4.5",
         "electron": "^30.0.9"

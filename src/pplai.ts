@@ -1,4 +1,7 @@
-
+import {
+  Axios,
+  AxiosError,
+} from 'axios';
 
 export async function findToolForPopulate(apiKey: string, toolSchema: string, toPopulateObject: string): Promise<string> {
 
@@ -148,32 +151,44 @@ export async function findTool(apiKey: string, toolSchema: string, userInstructi
 
 export async function instruct(instruction: string): Promise<string | undefined> {
 
+    const axiosInstance = new Axios({
+        baseURL: 'https://api.perplexity.ai',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.PPLAI_KEY}`,
+        },
+    });
+
     try{ 
 
-        const response = await fetch("https://api.perplexity.ai/chat/completions", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${process.env.PPLAI_KEY}`,
-            },
-            body: JSON.stringify({
-                model: "llama-3-70b-instruct",
-                messages: [
-                    {
-                        role: "system", 
-                        content: ""
-                    },
-                    { role: "user", content: `
-                        ${instruction}
-                    ` }
-                ]
-            }),
+       
+        const data = JSON.stringify({
+            model: "llama-3-70b-instruct",
+            messages: [
+                {
+                    role: "system",
+                    content: "",
+                },
+                {
+                    role: "user",
+                    content: instruction,
+                },
+            ],
         });
-    
-        const data = await response.json();
-        return data.choices[0].message.content;
-    } catch(exception) {
-        console.log(exception);
+
+        const response = await axiosInstance.post(
+            "/chat/completions",
+            data
+        );
+
+        const result = JSON.parse(response.data);
+        return result.choices[0].message.content;
+    } catch(error) {
+       if (error as AxiosError) {
+            const axiosError = error as AxiosError;
+            console.log(axiosError.cause);
+            console.log(axiosError.message);
+       }
     }
 
 }
