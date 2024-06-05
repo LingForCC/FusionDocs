@@ -198,7 +198,10 @@ async function useTool(findToolResponseObject: any): Promise<any> {
 
 async function handleInstructButtonClick() {
 
-    const response = await window.aiProvider.instruct("this is a test");
+    const userInstructionElement = document.getElementById("input-user") as HTMLInputElement;
+
+    const userInstructionString = userInstructionElement.value;
+    const response = await window.aiProvider.instruct(userInstructionString);
     const resultElement = document.getElementById('text-result');
     if (resultElement) {
         resultElement.innerHTML = resultElement.innerHTML + response;

@@ -151,35 +151,35 @@ export async function findTool(apiKey: string, toolSchema: string, userInstructi
 
 export async function instruct(instruction: string): Promise<string | undefined> {
 
+    
     const axiosInstance = new Axios({
         baseURL: 'https://api.perplexity.ai',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${process.env.PPLAI_KEY}`,
         },
+        timeout: 30000
     });
 
     try{ 
 
        
-        const data = JSON.stringify({
-            model: "llama-3-70b-instruct",
+        const data = {
+            model: "mixtral-8x7b-instruct",
             messages: [
-                {
-                    role: "system",
-                    content: "",
-                },
                 {
                     role: "user",
                     content: instruction,
                 },
             ],
-        });
+        };
 
         const response = await axiosInstance.post(
             "/chat/completions",
-            data
+            JSON.stringify(data)
         );
+
+        
 
         const result = JSON.parse(response.data);
         return result.choices[0].message.content;
